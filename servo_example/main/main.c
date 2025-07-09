@@ -32,6 +32,8 @@
 #define SERVO_MID 307     // yields 1.5 mS
 #define SERVO_MAX 410     // yields 2.0 mS
 #define CHANNEL_0 0
+#define CHANNEL_1 1
+#define CHANNEL_SEL CHANNEL_1
 
 static const char *TAG = "PCA9685_SERVO";
 
@@ -129,9 +131,9 @@ void pca9685_init() {
 }
 
 //#define MIN_POS
-//#define MID_POS
+#define MID_POS
 //#define MAX_POS
-#define SWEEP
+//#define SWEEP
 
 void app_main() {
     ESP_LOGI(TAG, "Initializing I2C...");
@@ -145,13 +147,13 @@ void app_main() {
 #ifdef SWEEP
         // Sweep the servo from minimum to maximum
         for (pulse = SERVO_MIN; pulse <= SERVO_MAX; pulse++) {
-            pca9685_set_pwm(CHANNEL_0, 0, pulse);
+            pca9685_set_pwm(CHANNEL_SEL, 0, pulse);
             vTaskDelay(10 / portTICK_PERIOD_MS);
         }
         ESP_LOGI(TAG, "pulse at %d", pulse);
         // Sweep the servo back from maximum to minimum
         for (pulse = SERVO_MAX; pulse >= SERVO_MIN; pulse--) {
-            pca9685_set_pwm(CHANNEL_0, 0, pulse);
+            pca9685_set_pwm(CHANNEL_SEL, 0, pulse);
             vTaskDelay(10 / portTICK_PERIOD_MS);
         }
         ESP_LOGI(TAG, "pulse at %d", pulse);
@@ -168,7 +170,7 @@ void app_main() {
         pulse = SERVO_MIN;
 #endif
 #ifndef SWEEP
-        pca9685_set_pwm(CHANNEL_0, 0, pulse);
+        pca9685_set_pwm(CHANNEL_SEL, 0, pulse);
         ESP_LOGI(TAG, "pulse at %d", pulse);
         vTaskDelay(1000 / portTICK_PERIOD_MS);
 #endif
