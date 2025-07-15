@@ -50,4 +50,11 @@
 #define PCA9685_PRESCALE_MIN 3   /**< minimum prescale value */
 #define PCA9685_PRESCALE_MAX 255 /**< maximum prescale value */
 
+/*
+ * exposed functions
+ */
+void pca9685_init(void);
+void pca9685_set_pwm(uint8_t channel, uint16_t on, uint16_t off);
+
+
 #endif // __PCA9685_H__
