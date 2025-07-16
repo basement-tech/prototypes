@@ -17,7 +17,13 @@ typedef struct {
 #define FUTABA_3107_MINA -45
 #define FUTABA_3107_MAXA 45
 
-#endif
+/*
+ * controller options
+ */
+#define SERVO_CTL_ADAFRUIT_PCA9685_I2C 1
+#define SERVO_CTL_GPIO 2  // bit banging
+#define SERVO_CONTROLLER SERVO_CTL_ADAFRUIT_PCA9685_I2C
+
 
 /*
  * servo API
@@ -25,3 +31,5 @@ typedef struct {
 void servo_init(void);
 void servo_move_real(uint8_t channel, int32_t angle);
 void servo_rest(uint8_t channel);
+
+#endif //__SERVO_DEFS_H__
