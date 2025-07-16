@@ -18,32 +18,8 @@
 #include "esp_log.h"
 #include "pca9685.h"
 
-// PCA9685 I2C address and parameters
-#define I2C_MASTER_NUM I2C_NUM_0
-#define I2C_MASTER_SDA_IO 23
-#define I2C_MASTER_SCL_IO 22
-#define I2C_MASTER_FREQ_HZ 100000
-
-/*
- * adafruit 16 channel pwm controller
- */
-#define SERVO_FREQ 46.5   // operating frequency of the servos yields exactly 20 mS period
-#define SERVO_MIN 205     // yields 1.0 mS 
-#define SERVO_MID 307     // yields 1.5 mS
-#define SERVO_MAX 410     // yields 2.0 mS
-
-
 static const char *TAG = "PCA9685_SERVO";
 
-/*
-i2c_master_bus_config_t i2c_mst_config = {
-    .clk_source = I2C_CLK_SRC_DEFAULT,
-    .i2c_port = I2C_MASTER_NUM,
-    .scl_io_num = I2C_MASTER_SCL_IO,
-    .sda_io_num = I2C_MASTER_SDA_IO,
-    .glitch_ignore_cnt = 7,
-};
-*/
 i2c_master_bus_handle_t bus_handle;
 
 i2c_device_config_t dev_cfg = {
@@ -111,7 +87,7 @@ void pca9685_init(void) {
     i2c_master_init();
 
     pca9685_write_byte(PCA9685_MODE1, MODE1_SLEEP);  // Put PCA9685 into sleep mode
-    uint8_t prescale = (uint8_t)(round((float)FREQUENCY_OSCILLATOR / (PCA9685_BIT_RESOLUTION * SERVO_FREQ))) - 1;  // Set PWM frequency to 50 Hz
+    uint8_t prescale = (uint8_t)(round((float)FREQUENCY_OSCILLATOR / (PCA9685_BIT_RESOLUTION * PCA9685_SERVO_FREQ))) - 1;  // Set PWM frequency to 50 Hz
     ESP_LOGI(TAG, "prescale = %u", prescale);
     pca9685_write_byte(PCA9685_PRESCALE, prescale);
     pca9685_write_byte(PCA9685_MODE1, MODE1_RSTN);  // Restart and set to normal mode

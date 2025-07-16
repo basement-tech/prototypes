@@ -50,6 +50,23 @@
 #define PCA9685_PRESCALE_MIN 3   /**< minimum prescale value */
 #define PCA9685_PRESCALE_MAX 255 /**< maximum prescale value */
 
+// PCA9685 I2C address and parameters
+#define I2C_MASTER_NUM I2C_NUM_0
+#define I2C_MASTER_SDA_IO 23
+#define I2C_MASTER_SCL_IO 22
+#define I2C_MASTER_FREQ_HZ 100000
+
+/*
+ * adafruit 16 channel pwm controller
+ * NOTE: PCA9685_MAX_CHANNELS controls the size servo_def[]
+ * (i.e. can be set to the number of channels used)
+ */
+#define PCA9685_MAX_CHANNELS 16      // number of channels in the controller
+#define PCA9685_SERVO_FREQ   46.5    // operating frequency of the servos yields exactly 20 mS period
+#define PCA9685_SERVO_MIN    205     // yields 1.0 mS 
+#define PCA9685_SERVO_MID    307     // yields 1.5 mS
+#define PCA9685_SERVO_MAX    410     // yields 2.0 mS
+
 /*
  * exposed functions
  */
