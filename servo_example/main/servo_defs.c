@@ -5,6 +5,7 @@
  */
 
 #include <stdint.h>
+#include <math.h>
 #include "pca9685.h"
 #include "servo_defs.h"
 
@@ -39,9 +40,38 @@ servo_def_t servo_defs[PCA9685_MAX_CHANNELS] = {
  * - all math is integer
  * 
  */
+float calc_map_span(uint16_t imin, uint16_t imax, int32_t rmin, int32_t rmax)  {
+    uint16_t ispan = imax - imin;  // the span of the "to" range
+    int32_t  rspan = abs(rmax - rmin);  // the span of the "from" range
+    return(ispan/(float)rspan);
+}
+
+uint16_t int_map(int32_t in, uint16_t imin, uint16_t imax, int32_t rmin, int32_t rmax)  {
+
+    uint16_t out = imin + abs(in) * calc_map_span(imin, imax, rmin, rmax);
+
+    return(out);
+}
+
+void servo_precalc(void)  {
+    for(int i = 0; i < PCA9685_MAX_CHANNELS; i++)
+        servo_defs[i].pre_incr = calc_map_span(
+                                            servo_defs[i].servo_min, servo_defs[i].servo_max,
+                                            servo_defs[i].mina, servo_defs[i].maxa
+                                            );
+}
+
+void servo_init(void)  {
+    pca9685_init();
+    servo_precalc();
+}
+
 void servo_move_real(uint8_t channel, int32_t angle)  {
-    map()
-    uint16_t pulsew = ((servo_defs[channel].servo_max - servo_defs[channel].servo_min))
+
+    uint16_t pulse = int_map(   angle, 
+                                servo_defs[channel].servo_min, servo_defs[channel].servo_max,
+                                servo_defs[channel].mina, servo_defs[channel].maxa);
+    pca9685_set_pwm(channel, 0, pulse);
 }
 
 void servo_rest(uint8_t channel)  {

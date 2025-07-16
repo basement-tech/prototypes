@@ -8,6 +8,7 @@ typedef struct {
     uint16_t servo_max; // pca9685 value corresponding to the largest cw angle
     int32_t mina;  // realworld angle corresponding to servo_min
     int32_t maxa;  // realworld angle corresponding to servo_max
+    float pre_incr;  // precalculated mapping increment per degree
 }  servo_def_t;
 
 /*
@@ -18,3 +19,9 @@ typedef struct {
 
 #endif
 
+/*
+ * servo API
+ */
+void servo_init(void);
+void servo_move_real(uint8_t channel, int32_t angle);
+void servo_rest(uint8_t channel);

@@ -26,8 +26,11 @@ static const char *TAG = "PCA9685_SERVO_MAIN";
 
 
 
-void app_main() {
-    
+void app_main(void) {
+   ESP_LOGI(TAG, "Initializing PCA9685...");
+   servo_init();
+
+#ifdef OBSCURE_OG
     ESP_LOGI(TAG, "Initializing PCA9685...");
     pca9685_init();
 
@@ -46,7 +49,7 @@ void app_main() {
             vTaskDelay(10 / portTICK_PERIOD_MS);
         }
         ESP_LOGI(TAG, "pulse at %d", pulse);
-#endif
+#endif  //SWEEP
 
 #ifdef MAX_POS
         pulse = PCA9685_SERVO_MAX;
@@ -64,4 +67,7 @@ void app_main() {
         vTaskDelay(1000 / portTICK_PERIOD_MS);
 #endif
     }
+
+#endif  // OBSCURE_OG
+
 }
