@@ -28,8 +28,9 @@ typedef struct {
 /*
  * servo API
  */
+extern servo_def_t servo_defs[];
 void servo_init(void);
-void servo_move_real(uint8_t channel, int32_t angle);
+uint16_t servo_move_real_pre(uint8_t channel, int32_t angle);
 void servo_rest(uint8_t channel);
 
 #endif //__SERVO_DEFS_H__

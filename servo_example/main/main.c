@@ -18,7 +18,7 @@
 #include "esp_log.h"
 #include "servo_defs.h"
 
-static const char *TAG = "PCA9685_SERVO_MAIN";
+#define TAG "PCA9685_SERVO_MAIN"
 
 #define CHANNEL_0 0
 #define CHANNEL_1 1
@@ -29,6 +29,22 @@ static const char *TAG = "PCA9685_SERVO_MAIN";
 void app_main(void) {
    ESP_LOGI(TAG, "Initializing PCA9685...");
    servo_init();
+
+   int32_t angle = 0;
+   uint8_t ch = 0;
+
+   while(1)  {
+      for(angle = servo_defs[ch].mina; angle <= servo_defs[ch].maxa; angle+=1)  {
+        servo_move_real_pre(ch, angle);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+      }
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+      for(angle = servo_defs[ch].maxa; angle >= servo_defs[ch].mina; angle-=1)  {
+        servo_move_real_pre(ch, angle);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+      }
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+   }
 
 #ifdef OBSCURE_OG
     ESP_LOGI(TAG, "Initializing PCA9685...");
