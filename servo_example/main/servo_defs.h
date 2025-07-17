@@ -33,7 +33,7 @@ typedef struct {
  * servo API
  */
 extern servo_def_t servo_defs[];
-void servo_init(void);
+esp_err_t servo_init(void);
 int32_t servo_move_real_pre(uint8_t channel, int32_t angle, bool relative);
 void servo_rest(uint8_t channel);
 

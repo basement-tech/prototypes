@@ -27,8 +27,9 @@
 
 
 void app_main(void) {
-   ESP_LOGI(TAG, "Initializing PCA9685...");
-   servo_init();
+   ESP_LOGI(TAG, "Initializing servo subsystem...");
+   if(servo_init() != ESP_OK)
+        ESP_LOGE(TAG, "Error initializing servos");
 
    int32_t angle = 0;
    uint8_t ch = 0;

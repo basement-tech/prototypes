@@ -67,9 +67,9 @@ void servo_precalc(void)  {
     }
 }
 
-void servo_init(void)  {
-    pca9685_init();
+esp_err_t servo_init(void)  {
     servo_precalc();
+    return(pca9685_init());
 }
 
 /*
