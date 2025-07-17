@@ -57,6 +57,9 @@ uint16_t int_map(int32_t in, uint16_t imin, uint16_t imax, int32_t rmin, int32_t
     return(out);
 }
 
+/*
+ * precalculate the pca9685 pulsewidth incr/deg and store in servo_defs[]
+ */
 void servo_precalc(void)  {
     for(int i = 0; i < PCA9685_MAX_CHANNELS; i++)  {
         servo_defs[i].pre_incr = calc_map_span(
@@ -110,7 +113,27 @@ int32_t servo_move_real_pre(uint8_t channel, int32_t angle, bool relative)  {
     return(angle);
 }
 
-void servo_rest(uint8_t channel)  {
-    
+/*
+ * move the servo to its neutral position (middle of travel, 1.5 mS).
+ * this function uses the pca9685 middle of range index directly.
+ * it then back-calculates position in degrees to fill in the current angle
+ * value in servo_defs[].
+ * NOTE: the real world angle in deg may not be symetrically mapped to the pulse width span.
+ */
+esp_err_t servo_rest(uint8_t ch)  {
+    esp_err_t err = ESP_OK;
+    if((err = pca9685_set_pwm(ch, 0, servo_defs[ch].servo_mid)) != ESP_OK)
+        ESP_LOGE(TAG, "Error setting channel %u to neutral position", ch);
+    else  {
+        int32_t delta_a = (servo_defs[ch].servo_mid - servo_defs[ch].servo_min)/servo_defs[ch].pre_incr;
+        servo_defs[ch].cura = servo_defs[ch].mina + delta_a;
+    }
+    return(err);
 }
 
+/*
+ * return the real world coordinate angle for the specified channel
+ */
+int32_t servo_get_angle(uint8_t ch)  {
+    return(servo_defs[ch].cura);
+}
