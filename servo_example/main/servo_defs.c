@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <math.h>
 #include "esp_log.h"
+#include "esp_err.h"
 #include "pca9685.h"
 #include "servo_defs.h"
 
@@ -84,14 +85,26 @@ void servo_init(void)  {
  *   +45                abs(45 -(-45))  = 90           servo_min + 90 * pre_incr(2.278) = 410
  */
 int32_t servo_move_real_pre(uint8_t channel, int32_t angle, bool relative)  {
+
+    /*
+     * apply the request for a relative move if so
+     * (i.e. convert to absolute)
+     */
+    if(relative == true)
+        angle = servo_defs[channel].cura + angle;
+        
     /*
      * make sure the requested angla is in bounds
      */
     if(angle > servo_defs[channel].maxa) angle = servo_defs[channel].maxa;
     else if(angle < servo_defs[channel].mina) angle = servo_defs[channel].mina;
 
+
     uint16_t pulse = servo_defs[channel].servo_min + abs(angle-servo_defs[channel].mina) * servo_defs[channel].pre_incr;
-    pca9685_set_pwm(channel, 0, pulse);
+    if(pca9685_set_pwm(channel, 0, pulse) == ESP_OK)
+        servo_defs[channel].cura = angle;
+    else
+        ESP_LOGE(TAG, "Error writing to servo");
 
     return(angle);
 }

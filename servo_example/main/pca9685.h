@@ -6,6 +6,8 @@
 #ifndef __PCA9685_H__
 #define __PCA9685_H__
 
+#include "esp_err.h"
+
 // REGISTER ADDRESSES
 #define PCA9685_MODE1 0x00      /**< Mode Register 1 */
 #define PCA9685_MODE2 0x01      /**< Mode Register 2 */
@@ -71,7 +73,7 @@
  * exposed functions
  */
 void pca9685_init(void);
-void pca9685_set_pwm(uint8_t channel, uint16_t on, uint16_t off);
+esp_err_t pca9685_set_pwm(uint8_t channel, uint16_t on, uint16_t off);
 
 
 #endif // __PCA9685_H__

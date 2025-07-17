@@ -70,7 +70,8 @@ void pca9685_write_byte(uint8_t reg, uint8_t data) {
  * negated. In this way, the phase shift becomes completely programmable. The resolution
  * for the phase shift is 1⁄4096 of the target frequency. Table 7 (datasheet) lists these registers.
  */
-void pca9685_set_pwm(uint8_t channel, uint16_t on, uint16_t off) {
+esp_err_t pca9685_set_pwm(uint8_t channel, uint16_t on, uint16_t off) {
+    esp_err_t ret = ESP_OK;
     uint8_t write_buf[5] = {
         0x06 + 4 * channel,  // LEDn_ON_L register address
         on & 0xFF,           // Low byte of ON value
@@ -78,8 +79,7 @@ void pca9685_set_pwm(uint8_t channel, uint16_t on, uint16_t off) {
         off & 0xFF,          // Low byte of OFF value
         off >> 8             // High byte of OFF value
     };
-    ESP_ERROR_CHECK(i2c_master_transmit(dev_handle, write_buf, sizeof(write_buf), 1000 / portTICK_PERIOD_MS));
-    //i2c_master_write_to_device(I2C_MASTER_NUM, PCA9685_I2C_ADDRESS, write_buf, 5, 1000 / portTICK_PERIOD_MS);
+    return(i2c_master_transmit(dev_handle, write_buf, sizeof(write_buf), 1000 / portTICK_PERIOD_MS));
 }
 
 void pca9685_init(void) {
