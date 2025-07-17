@@ -74,7 +74,8 @@ void servo_init(void)  {
 
 /*
  * make a move on the specified channel to the real world angle
- * servo_move_real_pre()  uses the precalculated value from servo_defs[].
+ * servo_move_real_pre()  uses the precalculated value from servo_defs[]
+ * (need to call servo_precalc() before using this function).
  * truncate the value if exceeds limits.
  * return the angle actual value set.
  * 
@@ -92,7 +93,7 @@ int32_t servo_move_real_pre(uint8_t channel, int32_t angle, bool relative)  {
      */
     if(relative == true)
         angle = servo_defs[channel].cura + angle;
-        
+
     /*
      * make sure the requested angla is in bounds
      */
@@ -110,6 +111,6 @@ int32_t servo_move_real_pre(uint8_t channel, int32_t angle, bool relative)  {
 }
 
 void servo_rest(uint8_t channel)  {
-
+    
 }
 
