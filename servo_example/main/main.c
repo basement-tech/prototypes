@@ -35,12 +35,12 @@ void app_main(void) {
 
    while(1)  {
       for(angle = servo_defs[ch].mina; angle <= servo_defs[ch].maxa; angle+=1)  {
-        servo_move_real_pre(ch, angle);
+        servo_move_real_pre(ch, angle, false);
         vTaskDelay(10 / portTICK_PERIOD_MS);
       }
       vTaskDelay(1000 / portTICK_PERIOD_MS);
       for(angle = servo_defs[ch].maxa; angle >= servo_defs[ch].mina; angle-=1)  {
-        servo_move_real_pre(ch, angle);
+        servo_move_real_pre(ch, angle, false);
         vTaskDelay(10 / portTICK_PERIOD_MS);
       }
       vTaskDelay(1000 / portTICK_PERIOD_MS);

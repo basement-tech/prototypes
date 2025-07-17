@@ -1,6 +1,9 @@
 #ifndef __SERVO_DEFS_H__
 #define __SERVO_DEFS_H__
 
+#include <stdint.h>
+#include <stdbool.h>
+
 typedef struct {
     uint8_t channel;  // channel in controller
     uint16_t servo_min; // pca9685 value corresponding to the most ccw angle
@@ -8,6 +11,7 @@ typedef struct {
     uint16_t servo_max; // pca9685 value corresponding to the largest cw angle
     int32_t mina;  // realworld angle corresponding to servo_min
     int32_t maxa;  // realworld angle corresponding to servo_max
+    int32_t cura;  // last successfully set angle
     float pre_incr;  // precalculated mapping increment per degree
 }  servo_def_t;
 
@@ -30,7 +34,7 @@ typedef struct {
  */
 extern servo_def_t servo_defs[];
 void servo_init(void);
-uint16_t servo_move_real_pre(uint8_t channel, int32_t angle);
+int32_t servo_move_real_pre(uint8_t channel, int32_t angle, bool relative);
 void servo_rest(uint8_t channel);
 
 #endif //__SERVO_DEFS_H__
