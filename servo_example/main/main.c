@@ -33,6 +33,7 @@ void app_main(void) {
    int32_t angle = 0;
    uint8_t ch = 0;
 
+#ifdef NEW_LIB
    while(1)  {
       for(angle = servo_defs[ch].mina; angle <= servo_defs[ch].maxa; angle+=1)  {
         servo_move_real_pre(ch, angle, false);
@@ -41,6 +42,27 @@ void app_main(void) {
       vTaskDelay(1000 / portTICK_PERIOD_MS);
       for(angle = servo_defs[ch].maxa; angle >= servo_defs[ch].mina; angle-=1)  {
         servo_move_real_pre(ch, angle, false);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+      }
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+   }
+#endif
+   /*
+    * relative move test
+    */
+   while(1)  {
+      servo_move_real_pre(ch, servo_defs[ch].mina, false);  // absolute move to ccw
+      /*
+       * make 90 1 deg relative moves
+       */
+      for(int i = 0; i < 90; i++)  {
+        servo_move_real_pre(ch, 1, true);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+      }
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+      servo_move_real_pre(ch, servo_defs[ch].maxa, false);  // correct for stack up
+      for(int i = 0; i < 90; i++)  {
+        servo_move_real_pre(ch, -1, true);
         vTaskDelay(10 / portTICK_PERIOD_MS);
       }
       vTaskDelay(1000 / portTICK_PERIOD_MS);
