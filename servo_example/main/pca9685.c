@@ -38,16 +38,30 @@ i2c_master_bus_config_t i2c_mst_config = {
     .glitch_ignore_cnt = 7,
 };
 
-void i2c_master_init(void)  {
-    ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &bus_handle));  // set the config in bus_handle structure
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_cfg, &dev_handle));  // configure the device characteristics
+esp_err_t i2c_master_init(void)  {
+    esp_err_t err = ESP_OK;
+
+    // set the config in bus_handle structure
+    if((err = i2c_new_master_bus(&i2c_mst_config, &bus_handle)) != ESP_OK)  
+        ESP_LOGE(TAG, "Error setting i2c master bus ... i2c will not funcion");
+
+    // configure the device characteristics
+    else if((err = i2c_master_bus_add_device(bus_handle, &dev_cfg, &dev_handle)) != ESP_OK)
+        ESP_LOGE(TAG, "Error adding i2c master bus ... i2c will not function");
+
+    return(err);  // closest
+
 }
 
 
-void pca9685_write_byte(uint8_t reg, uint8_t data) {
+esp_err_t pca9685_write_byte(uint8_t reg, uint8_t data) {
+    esp_err_t err = ESP_OK;
     uint8_t write_buf[2] = {reg, data};
-    ESP_ERROR_CHECK(i2c_master_transmit(dev_handle, write_buf, sizeof(write_buf), 1000 / portTICK_PERIOD_MS));
-    //i2c_master_write_to_device(I2C_MASTER_NUM, PCA9685_I2C_ADDRESS, write_buf, 2, 1000 / portTICK_PERIOD_MS);
+
+    if((err = i2c_master_transmit(dev_handle, write_buf, sizeof(write_buf), 1000 / portTICK_PERIOD_MS)) != ESP_OK)
+        ESP_LOGE(TAG, "error wring to i2c bus");
+
+    return(err);
 }
 
 /*
@@ -71,7 +85,6 @@ void pca9685_write_byte(uint8_t reg, uint8_t data) {
  * for the phase shift is 1⁄4096 of the target frequency. Table 7 (datasheet) lists these registers.
  */
 esp_err_t pca9685_set_pwm(uint8_t channel, uint16_t on, uint16_t off) {
-    esp_err_t ret = ESP_OK;
     uint8_t write_buf[5] = {
         0x06 + 4 * channel,  // LEDn_ON_L register address
         on & 0xFF,           // Low byte of ON value
@@ -82,15 +95,28 @@ esp_err_t pca9685_set_pwm(uint8_t channel, uint16_t on, uint16_t off) {
     return(i2c_master_transmit(dev_handle, write_buf, sizeof(write_buf), 1000 / portTICK_PERIOD_MS));
 }
 
-void pca9685_init(void) {
+esp_err_t pca9685_init(void) {
+    esp_err_t err = ESP_OK;
 
-    i2c_master_init();
+    ESP_LOGI(TAG, "Initializing PCA9685...");
+    if((err = i2c_master_init()) != ESP_OK)
+        ESP_LOGE(TAG, "error initializing i2c for pca9685");
+    else  {
+        // Set PWM frequency to 50 Hz
+        uint8_t prescale = (uint8_t)(round((float)FREQUENCY_OSCILLATOR / (PCA9685_BIT_RESOLUTION * PCA9685_SERVO_FREQ))) - 1;
+        ESP_LOGI(TAG, "prescale = %u", prescale);
 
-    pca9685_write_byte(PCA9685_MODE1, MODE1_SLEEP);  // Put PCA9685 into sleep mode
-    uint8_t prescale = (uint8_t)(round((float)FREQUENCY_OSCILLATOR / (PCA9685_BIT_RESOLUTION * PCA9685_SERVO_FREQ))) - 1;  // Set PWM frequency to 50 Hz
-    ESP_LOGI(TAG, "prescale = %u", prescale);
-    pca9685_write_byte(PCA9685_PRESCALE, prescale);
-    pca9685_write_byte(PCA9685_MODE1, MODE1_RSTN);  // Restart and set to normal mode
+        // Put PCA9685 into sleep mode
+        if((err = pca9685_write_byte(PCA9685_MODE1, MODE1_SLEEP)) != ESP_OK) 
+            ESP_LOGE(TAG, "error putting pca9685 into initial sleep mode");
+        // set the prescale value
+        else if((err = pca9685_write_byte(PCA9685_PRESCALE, prescale)) != ESP_OK)
+            ESP_LOGE(TAG, "error setting pca9685 prescale value");
+        // Restart and set to normal mode
+        else if((err = pca9685_write_byte(PCA9685_MODE1, MODE1_RSTN)) != ESP_OK)
+            ESP_LOGE(TAG, "error returning pca9685 to normal mode");
+    }
+    return(err);
 }
 
 

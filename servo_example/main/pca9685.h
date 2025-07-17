@@ -72,7 +72,7 @@
 /*
  * exposed functions
  */
-void pca9685_init(void);
+esp_err_t pca9685_init(void);
 esp_err_t pca9685_set_pwm(uint8_t channel, uint16_t on, uint16_t off);
 
 
