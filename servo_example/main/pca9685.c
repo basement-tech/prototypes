@@ -20,6 +20,10 @@
 
 static const char *TAG = "PCA9685_SERVO";
 
+/*
+ * i2c configuration that works with the pca9685
+ * 16 channel pwm controller
+ */
 i2c_master_bus_handle_t bus_handle;
 
 i2c_device_config_t dev_cfg = {
@@ -38,6 +42,9 @@ i2c_master_bus_config_t i2c_mst_config = {
     .glitch_ignore_cnt = 7,
 };
 
+/*
+ * initialize the i2c bus according to the spec above
+ */
 esp_err_t i2c_master_init(void)  {
     esp_err_t err = ESP_OK;
 
