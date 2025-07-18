@@ -35,26 +35,36 @@ void app_main(void) {
    uint8_t ch = 0;
 
    while(1)  {
-      servo_move_real_pre(ch, servo_defs[ch].mina, false);  // absolute move to ccw
+      //servo_move_real_pre(ch, servo_defs[ch].mina, false);  // absolute move to ccw
       servo_rest(ch);  // back to middle
-      ESP_LOGI(TAG, "rest move resulted in %ld deg", servo_get_angle(ch));
+      ESP_LOGI(TAG, "top rest move resulted in %ld deg", servo_get_angle(ch));
+
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
 
       /*
        * make 45 1 deg relative moves
        */
+      ESP_LOGI(TAG, "move slowly to maxa...");
       for(int i = 0; i < 45; i++)  {
         servo_move_real_pre(ch, 1, true);
         vTaskDelay(10 / portTICK_PERIOD_MS);
       }
       vTaskDelay(1000 / portTICK_PERIOD_MS);
       servo_move_real_pre(ch, servo_defs[ch].maxa, false);  // correct for stack up
+
+      ESP_LOGI(TAG, "back to the resting position");
       servo_rest(ch);  // back to middle
       ESP_LOGI(TAG, "rest move resulted in %ld deg", servo_get_angle(ch));
 
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+      
+      ESP_LOGI(TAG, "move slowly to mina");
       for(int i = 0; i < 45; i++)  {
         servo_move_real_pre(ch, -1, true);
         vTaskDelay(10 / portTICK_PERIOD_MS);
       }
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+      ESP_LOGI(TAG, "finally back to the middle ...");
       servo_rest(ch);  // back to middle
       vTaskDelay(1000 / portTICK_PERIOD_MS);
    }
