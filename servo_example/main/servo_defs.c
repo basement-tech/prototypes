@@ -48,17 +48,33 @@ servo_def_t servo_defs[PCA9685_MAX_CHANNELS] = {
  * 
  */
 float calc_map_span(uint16_t imin, uint16_t imax, int32_t rmin, int32_t rmax)  {
-    uint16_t ispan = imax - imin;  // the span of the "to" range
-    int32_t  rspan = abs(rmax - rmin);  // the span of the "from" range
+    int32_t ispan = imax - imin;  // the span of the "to" range
+    int32_t  rspan = rmax - rmin;  // the span of the "from" range
     return(ispan/(float)rspan);
 }
 
+/*
+ * calculate the pulse width from the angle
+ * using the values from the indicated servo channel/servo
+ */
+uint16_t calc_pulse(uint8_t ch, int32_t angle)  {
+     uint16_t pulse = servo_defs[ch].servo_min + (angle-servo_defs[ch].mina) * servo_defs[ch].pre_incr;
+     return(pulse);
+}
+
+int32_t calc_angle(uint8_t ch, uint16_t pulse)  {
+    int32_t angle = servo_defs[ch].mina + (pulse - servo_defs[ch].servo_min)/servo_defs[ch].pre_incr;
+    return(angle);
+}
+
+/*** not tested
 uint16_t int_map(int32_t in, uint16_t imin, uint16_t imax, int32_t rmin, int32_t rmax)  {
 
     uint16_t out = imin + abs(in) * calc_map_span(imin, imax, rmin, rmax);
 
     return(out);
 }
+*/
 
 /*
  * precalculate the pca9685 pulsewidth incr/deg and store in servo_defs[]
@@ -106,8 +122,7 @@ int32_t servo_move_real_pre(uint8_t channel, int32_t angle, bool relative)  {
     if(angle > servo_defs[channel].maxa) angle = servo_defs[channel].maxa;
     else if(angle < servo_defs[channel].mina) angle = servo_defs[channel].mina;
 
-
-    uint16_t pulse = servo_defs[channel].servo_min + abs(angle-servo_defs[channel].mina) * servo_defs[channel].pre_incr;
+    uint16_t pulse = calc_pulse(channel, angle);
     if(pca9685_set_pwm(channel, 0, pulse) == ESP_OK)
         servo_defs[channel].cura = angle;
     else
@@ -128,8 +143,7 @@ esp_err_t servo_rest(uint8_t ch)  {
     if((err = pca9685_set_pwm(ch, 0, servo_defs[ch].servo_mid)) != ESP_OK)
         ESP_LOGE(TAG, "Error setting channel %u to neutral position", ch);
     else  {
-        int32_t delta_a = (servo_defs[ch].servo_mid - servo_defs[ch].servo_min)/servo_defs[ch].pre_incr;
-        servo_defs[ch].cura = servo_defs[ch].mina + delta_a;
+        servo_defs[ch].cura = calc_angle(ch, servo_defs[ch].servo_mid);
     }
     return(err);
 }
