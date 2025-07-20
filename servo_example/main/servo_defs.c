@@ -19,22 +19,22 @@
  *  --  ---------------     ---------------    ---------------    --------------    --------------  ---------  --------
  */
 servo_def_t servo_defs[PCA9685_MAX_CHANNELS] = {
-   {0,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {1,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {2,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {3,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {4,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {5,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {6,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {7,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {8,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {9,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {10, PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {11, PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {12, PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {13, PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {14, PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0},  // Futaba 3107
-   {15, PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0}   // Futaba 3107
+   {0,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MAXA, FUTABA_3107_MINA,  0,        0, false},  // Futaba 3107
+   {1,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
+   {2,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
+   {3,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
+   {4,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
+   {5,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
+   {6,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
+   {7,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
+   {8,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
+   {9,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
+   {10, PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
+   {11, PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
+   {12, PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
+   {13, PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
+   {14, PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
+   {15, PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false}   // Futaba 3107
 };
 
 /*
@@ -85,7 +85,10 @@ void servo_precalc(void)  {
                                             servo_defs[i].servo_min, servo_defs[i].servo_max,
                                             servo_defs[i].mina, servo_defs[i].maxa
                                             );
-        ESP_LOGI(TAG, "pre_incr = %f", servo_defs[i].pre_incr);
+        if(servo_defs[i].maxa > servo_defs[i].mina)  servo_defs[i].bound_sign = true;
+        else  servo_defs[i].bound_sign = false;
+
+        ESP_LOGD(TAG, "pre_incr = %f", servo_defs[i].pre_incr);
     }
 }
 
@@ -101,30 +104,36 @@ esp_err_t servo_init(void)  {
  * truncate the value if exceeds limits.
  * return the angle actual value set.
  * 
- *   angle       abs(angle-servo_defs[channel].mina)                 pulse
- *   -----       -----------------------------------                 -----
- *   -45                abs(-45 -(-45)) = 0                      servo_min = 205
- *    0                 abs(0 -(-45))   = 45           servo_min + 45 * pre_incr(2.278) = 308  (aka servo_mid)
- *   +45                abs(45 -(-45))  = 90           servo_min + 90 * pre_incr(2.278) = 410
+ *   angle                      pulse
+ *   -----                      -----
+
  */
-int32_t servo_move_real_pre(uint8_t channel, int32_t angle, bool relative)  {
+int32_t servo_move_real_pre(uint8_t ch, int32_t angle, bool relative)  {
 
     /*
      * apply the request for a relative move if so
      * (i.e. convert to absolute)
      */
     if(relative == true)
-        angle = servo_defs[channel].cura + angle;
+        angle = servo_defs[ch].cura + angle;
 
     /*
      * make sure the requested angla is in bounds
+     * (use the precalculated bound_sign flag)
      */
-    if(angle > servo_defs[channel].maxa) angle = servo_defs[channel].maxa;
-    else if(angle < servo_defs[channel].mina) angle = servo_defs[channel].mina;
+    if(servo_defs[ch].bound_sign == true)  {
+        if((angle + servo_defs[ch].mina) > servo_defs[ch].maxa)
+            angle = servo_defs[ch].maxa;
+    }
+    else  {
+        if((angle + servo_defs[ch].maxa) > servo_defs[ch].mina)
+            angle = servo_defs[ch].mina;
+    }
 
-    uint16_t pulse = calc_pulse(channel, angle);
-    if(pca9685_set_pwm(channel, 0, pulse) == ESP_OK)
-        servo_defs[channel].cura = angle;
+    uint16_t pulse = calc_pulse(ch, angle);
+    ESP_LOGI(TAG, "pulse = %u", pulse);
+    if(pca9685_set_pwm(ch, 0, pulse) == ESP_OK)
+        servo_defs[ch].cura = angle;
     else
         ESP_LOGE(TAG, "Error writing to servo");
 

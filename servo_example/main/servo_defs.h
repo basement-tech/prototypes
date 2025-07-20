@@ -13,6 +13,7 @@ typedef struct {
     int32_t maxa;  // realworld angle corresponding to servo_max
     int32_t cura;  // last successfully set angle
     float pre_incr;  // precalculated mapping increment per degree
+    bool bound_sign;  // which is greater maxa or mina (for bound checking)
 }  servo_def_t;
 
 /*
