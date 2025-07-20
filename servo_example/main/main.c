@@ -53,6 +53,21 @@ void app_main(void) {
       }
       ESP_LOGI(TAG, "at end if 45 +1 moves %ld deg", servo_get_angle(ch));
       vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+      servo_rest(ch);  // back to middle
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+            /*
+       * make 45 +1 deg relative moves
+       */
+      ESP_LOGI(TAG, "move slowly to maxa...");
+      for(int i = 0; i < 45; i++)  {
+        servo_move_real_pre(ch, -1, true);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+      }
+      ESP_LOGI(TAG, "at end if 45 -1 moves %ld deg", servo_get_angle(ch));
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+
     }
 #ifdef MINUSPLUS45
    /*
