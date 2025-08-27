@@ -19,7 +19,7 @@
  *  --  ---------------     ---------------    ---------------    --------------    --------------  ---------  --------
  */
 servo_def_t servo_defs[PCA9685_MAX_CHANNELS] = {
-   {0,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MAXA, FUTABA_3107_MINA,  0,        0, false},  // Futaba 3107
+   {0,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
    {1,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
    {2,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107
    {3,  PCA9685_SERVO_MIN, PCA9685_SERVO_MID, PCA9685_SERVO_MAX, FUTABA_3107_MINA, FUTABA_3107_MAXA,  0,        0, false},  // Futaba 3107

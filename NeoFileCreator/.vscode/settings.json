@@ -1,0 +1,5 @@
+{
+    "makefile.configureOnOpen": false,
+    "makefile.makefilePath": ".",
+    "makefile.makePath": "C:\\msys64\\ucrt64\\bin\\mingw32-make.exe"
+}
