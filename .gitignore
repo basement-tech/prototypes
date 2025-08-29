@@ -9,4 +9,6 @@ static_ip
 station/
 servo_example\ -\ Copy
 *.zip
+*.exe
+*.o
 

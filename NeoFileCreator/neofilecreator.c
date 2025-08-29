@@ -2,13 +2,14 @@
 #include <string.h>
 #include <stdint.h>
 
-#define NUM_ARGS 1  // filename
+#define NUM_ARGS 2  // filename, strategy
 #define MIN_ARGS 1  // filename required
 #define DELIM_START '<'
 #define DELIM_STOP  '>'
 
 static const char header_json[] =
 R"==(
+{"strategy" : "bitwise", "__comment" : "first line is skipped after noting strategy"}
 {
     "label" : "USER-5",
     "strategy" : "bitwise",
@@ -24,6 +25,9 @@ uint32_t data[] = { 0x10101010, 0x00000000, 0x00000000, 0x00000000, 1000,
 
 void main(int argc, char **argv)  {
     char filename[128];
+    char strategy[32] = "bitwise";
+    int jlen = 0; // length of the json to follow
+
     FILE *fp;
     int num = 0;
 
@@ -40,6 +44,9 @@ void main(int argc, char **argv)  {
                 case 1:
                     strncpy(filename, argv[n], sizeof(filename));
                     break;
+                case 2:
+                    strncpy(strategy, argv[n], sizeof(strategy));
+                    break;
                 default:
                     break;
             }
@@ -48,10 +55,12 @@ void main(int argc, char **argv)  {
             fprintf(stderr, "Error: can't open file %s\n", filename);
         else
         {
-            fprintf(fp, "%c%d%c", DELIM_START, strlen(header_json), DELIM_STOP);
-            printf("wrote size of header as %d\n", strlen(header_json));
-            num = fwrite(header_json, sizeof(uint8_t), strlen(header_json), fp);
-            printf("%d characters written\n", num);
+            fprintf(fp, "{\"strategy\" : \"%s\",", strategy);
+            fprintf(fp, "\"jlen\" : %d,", jlen);
+            fprintf(fp, "\"__comment\" : \"first line is skipped\"}\n");
+            //printf("wrote size of header as %d\n", strlen(header_json));
+            //num = fwrite(header_json, sizeof(uint8_t), strlen(header_json), fp);
+            //printf("%d characters written\n", num);
             num = fwrite(data, sizeof(uint8_t), sizeof(data), fp);
             printf("%d bytes written\n", num);
             fclose(fp);
