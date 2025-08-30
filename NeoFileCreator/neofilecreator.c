@@ -13,7 +13,8 @@ R"==(
 {
     "label" : "USER-5",
     "strategy" : "bitwise",
-    "bonus" : { "depth" : "2", "pixel_cnt" : 32, "brightness" : {"r": 255,  "g": 0, "b": 0, "w": 0}}
+    "bonus" : { "depth" : "2", "pixel_cnt" : 32, "brightness" : {"r": 255,  "g": 0, "b": 0, "w": 0}},
+    "pixelcnt" : 32
 }
 )==";
 
@@ -25,7 +26,10 @@ uint32_t data[] = { 0x10101010, 0x00000000, 0x00000000, 0x00000000, 1000,
 
 void main(int argc, char **argv)  {
     char filename[128];
+    char label[32] = "USER-5";
     char strategy[32] = "bitwise";
+    char bonus[] = "\"bonus\" : { \"depth\" : \"2\", \"pixel_cnt\" : 32, \"brightness\" : {\"r\": 255,  \"g\": 0, \"b\": 0, \"w\": 0}}";
+    char pixelcnt[32] = "32";
     int jlen = 0; // length of the json to follow
 
     FILE *fp;
@@ -55,8 +59,11 @@ void main(int argc, char **argv)  {
             fprintf(stderr, "Error: can't open file %s\n", filename);
         else
         {
-            fprintf(fp, "{\"strategy\" : \"%s\",", strategy);
-            fprintf(fp, "\"jlen\" : %d,", jlen);
+            fprintf(fp, "{\"filetype\" : \"BIN_BW\", \"__comment\" : \"points as binary\"}\n");
+            fprintf(fp, "{");
+            fprintf(fp, "\"label\" : \"%s\",", label);
+            fprintf(fp, "\"strategy\" : \"%s\",", strategy);
+            fprintf(fp, "\"bonus\" : \"%s\",", bonus);
             fprintf(fp, "\"__comment\" : \"first line is skipped\"}\n");
             //printf("wrote size of header as %d\n", strlen(header_json));
             //num = fwrite(header_json, sizeof(uint8_t), strlen(header_json), fp);
