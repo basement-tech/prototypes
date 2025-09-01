@@ -72,14 +72,21 @@ void main(int argc, char **argv)  {
             snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"__comment\" : \"back and forth\",\n");
 
             uint32_t hdr_len = strlen(header);
-            snprintf(header+strlen(header), (cbal-=strlen(header)), "%s%4u\n}\n", hdr_len_label, hdr_len+strlen(hdr_len_label)+3);
+            /*
+             * add extra stuff to size:
+             *  strlen(hdr_len_label): json label, including spaces and punctuation
+             *  4 : length of the head length number itself
+             *  3 : curly bracket and newlines
+             *
+             */
+            snprintf(header+strlen(header), (cbal-=strlen(header)), "%s%4u\n}\n", hdr_len_label, (hdr_len+strlen(hdr_len_label)+4+3));
 
-            fprintf(stdout, "%s", header);
-            //printf("wrote size of header as %d\n", strlen(header_json));
-            //num = fwrite(header_json, sizeof(uint8_t), strlen(header_json), fp);
-            //printf("%d characters written\n", num);
+            printf("Header as buffer:\n%s\n", header);
+            printf("strlen(header) = %d\n", strlen(header));
+            num = fwrite(header, sizeof(char), strlen(header), fp);
+            printf("%d header characters written\n", num);
             num = fwrite(data, sizeof(uint8_t), sizeof(data), fp);
-            printf("%d bytes written\n", num);
+            printf("%d binary bytes written\n", num);
             fclose(fp);
         }
     }
