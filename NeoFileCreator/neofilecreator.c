@@ -21,6 +21,7 @@ R"==(
 )==";
 
 char header[MAX_HDR_SIZE] = {0};;
+char preamble[256] = {0};
 
 //                       R           G           B           W        T
 uint32_t data[] = { 0x10101010, 0x00000000, 0x00000000, 0x00000000, 1000,
@@ -33,7 +34,6 @@ void main(int argc, char **argv)  {
     char strategy[32] = "bitwise";
     char bonus[] = "{ \"depth\" : \"2\", \"pixel_cnt\" : 32, \"brightness\" : {\"r\": 255,  \"g\": 0, \"b\": 0, \"w\": 0}}";
     char pixelcnt[32] = "32";
-    char *hdr_len_label = "  \"hdrlen\" : ";
     int jlen = 0; // length of the json to follow
 
     FILE *fp;
@@ -64,25 +64,21 @@ void main(int argc, char **argv)  {
         else
         {
             uint32_t cbal = sizeof(header);
-            snprintf(header, cbal, "{\"filetype\" : \"BIN_BW\", \"__comment\" : \"points as binary\"}\n");
-            snprintf(header+strlen(header), (cbal-=strlen(header)), "{\n");
+
+            snprintf(header, cbal, "{\n");
             snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"label\" : \"%s\",\n", label);
             snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"strategy\" : \"%s\",\n", strategy);
             snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"bonus\" : %s,\n", bonus);
-            snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"__comment\" : \"back and forth\",\n");
+            snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"__comment\" : \"back and forth\"\n");
+            snprintf(header+strlen(header), (cbal-=strlen(header)), "}\n");
 
             uint32_t hdr_len = strlen(header);
-            /*
-             * add extra stuff to size:
-             *  strlen(hdr_len_label): json label, including spaces and punctuation
-             *  4 : length of the head length number itself
-             *  3 : curly bracket and newlines
-             *
-             */
-            snprintf(header+strlen(header), (cbal-=strlen(header)), "%s%4u\n}\n", hdr_len_label, (hdr_len+strlen(hdr_len_label)+4+3));
-
             printf("Header as buffer:\n%s\n", header);
             printf("strlen(header) = %d\n", strlen(header));
+
+            snprintf(preamble, cbal, "{\"filetype\" : \"BIN_BW\", \"hdrlen\" : %4u, \"__comment\" : \"points as binary\"}\n", hdr_len);
+            fwrite(preamble, sizeof(char), strlen(preamble), fp);
+
             num = fwrite(header, sizeof(char), strlen(header), fp);
             printf("%d header characters written\n", num);
             num = fwrite(data, sizeof(uint8_t), sizeof(data), fp);
