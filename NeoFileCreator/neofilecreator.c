@@ -15,7 +15,7 @@ R"==(
 {
     "label" : "USER-5",
     "strategy" : "bitwise",
-    "bonus" : { "depth" : "2", "pixel_cnt" : 32, "brightness" : {"r": 255,  "g": 0, "b": 0, "w": 0}},
+    "bonus" : { "depth" : "2", "pixel_cnt" : 64, "brightness" : {"r": 255,  "g": 0, "b": 0, "w": 0}},
     "pixelcnt" : 32
 }
 )==";
@@ -23,16 +23,28 @@ R"==(
 char header[MAX_HDR_SIZE] = {0};;
 char preamble[256] = {0};
 
-//                       R           G           B           W        T
-uint32_t data[] = { 0x10101010, 0x00000000, 0x00000000, 0x00000000, 1000,
-                    0x01010101, 0x00000000, 0x00000000, 0x00000000, 1000,
-                    0x0, 0x0, 0x0, 0x0, -1 };
+typedef struct __attribute__((packed)) {
+    uint8_t o;  // offset
+    uint32_t r, g, b, w;  // colors
+    uint32_t d;   // delay
+} seq_bin_t;
+
+//
+// BEWARE OF STRUCTURE PACKING !!!
+//                 Offset    R           G           B           W        T
+seq_bin_t data[] = {
+                        { 0, 0x10101010, 0x00000000, 0x00000000, 0x00000000, 0x11111111},
+                        { 1, 0x10101010, 0x00000000, 0x00000000, 0x00000000, 1000},
+                        { 0, 0x01010101, 0x00000000, 0x00000000, 0x00000000, 0},
+                        { 1, 0x01010101, 0x00000000, 0x00000000, 0x00000000, 1000},
+                        {-1, 0x0, 0x0, 0x0, 0x0, 0 }
+                    };
 
 void main(int argc, char **argv)  {
     char filename[128];
-    char label[32] = "USER-5";
+    char label[32] = "USER-6";
     char strategy[32] = "bitwise";
-    char bonus[] = "{ \"depth\" : \"2\", \"pixel_cnt\" : 32, \"brightness\" : {\"r\": 255,  \"g\": 0, \"b\": 0, \"w\": 0}}";
+    char bonus[] = "{ \"depth\" : 2, \"pixel_cnt\" : 64, \"brightness\" : {\"r\": 255,  \"g\": 0, \"b\": 0, \"w\": 0}}";
     char pixelcnt[32] = "32";
     int jlen = 0; // length of the json to follow
 
@@ -76,11 +88,12 @@ void main(int argc, char **argv)  {
             printf("Header as buffer:\n%s\n", header);
             printf("strlen(header) = %d\n", strlen(header));
 
-            snprintf(preamble, cbal, "{\"filetype\" : \"BIN_BW\", \"hdrlen\" : %4u, \"__comment\" : \"points as binary\"}\n", hdr_len);
+            snprintf(preamble, cbal, "{\"filetype\" : \"BIN_BW\", \"jsonlen\" : %4u, \"__comment\" : \"points as binary\"}\n", hdr_len);
             fwrite(preamble, sizeof(char), strlen(preamble), fp);
 
             num = fwrite(header, sizeof(char), strlen(header), fp);
             printf("%d header characters written\n", num);
+            printf("sizeof() each binary data structure = %d\n", sizeof(seq_bin_t));
             num = fwrite(data, sizeof(uint8_t), sizeof(data), fp);
             printf("%d binary bytes written\n", num);
             fclose(fp);
