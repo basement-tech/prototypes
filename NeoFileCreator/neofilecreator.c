@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #define NUM_ARGS 6  //
 #define MIN_ARGS 0  //
@@ -21,9 +22,9 @@ R"==(
 }
 )==";
 
-char header[MAX_HDR_SIZE] = {0};;
+char header[MAX_HDR_SIZE] = {0};
 char preamble[256] = {0};
-
+#define BITS_PER_BITMAP 32  // how wide in bits is ach color bitmap entry
 typedef struct __attribute__((packed)) {
     int8_t o;  // offset
     uint32_t r, g, b, w;  // color bitmap
@@ -60,9 +61,12 @@ void main(int argc, char **argv)  {
     char filename[128] = "neo_user_6.bseq";
     char label[32] = "USER-6";
     char strategy[32] = "bbitwise";
-    char bonus[] = "{ \"depth\" : 2, \"pixel_cnt\" : 64, \"brightness\" : {\"r\": 64,  \"g\": 64, \"b\": 64, \"w\": 0}}";
-    char pixelcnt[32] = "32";
+    char fileopt[32] = "default";
+    char bonus[128] = "{ \"depth\" : 2, \"pixel_cnt\" : 64, \"brightness\" : {\"r\": 64,  \"g\": 64, \"b\": 64, \"w\": 0}}";
+    char pixelcnt[32] = "64";
+    int idepth = 2;  // depth as integer
     int jlen = 0; // length of the json to follow
+    uint32_t cbal;  // character balance when creating character strings
 
     FILE *fp;
     int num = 0;
@@ -86,7 +90,7 @@ void main(int argc, char **argv)  {
                     switch((*argv)[1])  {
                         case 'f':  // filename
                         case 'p':  // pixelcount
-                        case 's':  // strategy
+                        case 'o':  // file contents option
                             arg = (*argv)[1];
                             break;
 
@@ -109,8 +113,8 @@ void main(int argc, char **argv)  {
                         strncpy(pixelcnt, *argv, sizeof(pixelcnt));
                         break;
 
-                    case 's':  // strategy
-                        strncpy(strategy, *argv, sizeof(strategy));
+                    case 'o':  // strategy
+                        strncpy(fileopt, *argv, sizeof(fileopt));
                         break;
 
                     default:
@@ -125,14 +129,36 @@ void main(int argc, char **argv)  {
         printf("Using:\n");
         printf("   filename :  %s\n", filename);
         printf("   pixelcount: %s\n", pixelcnt);
-        printf("   strategy:   %s\n", strategy);
+        printf("   fileopt:    %s\n", fileopt);
 
-        if(err == 99999)  {
+        if(err >=0)  {
             if((fp = fopen(filename, "wb")) == NULL)
                 fprintf(stderr, "Error: can't open file %s\n", filename);
             else
             {
-                uint32_t cbal = sizeof(header);
+                idepth = atoi(pixelcnt) / BITS_PER_BITMAP;  // remainder truncated
+                if((atoi(pixelcnt) % BITS_PER_BITMAP) > 0)  // leftovers require a full depth added
+                    idepth++;
+                printf("   calculated depth:  %d\n", idepth);
+
+                /*
+                 * create the bonus string based on parameters
+                 */
+                strncpy(bonus,
+                        "{ \"depth\" : 2, \"pixel_cnt\" : 64, \"brightness\" : {\"r\": 64,  \"g\": 64, \"b\": 64, \"w\": 0}}",
+                        sizeof(bonus));
+
+                cbal - sizeof(bonus);
+                snprintf(bonus, cbal, "{ \"depth\" : ");
+                snprintf(bonus+strlen(bonus), (cbal-=strlen(bonus)), "%2d, ", idepth);
+                snprintf(bonus+strlen(bonus), (cbal-=strlen(bonus)), "\"pixel_cnt\" : ");
+                snprintf(bonus+strlen(bonus), (cbal-=strlen(bonus)), "%s, ", pixelcnt);
+                snprintf(bonus+strlen(bonus), (cbal-=strlen(bonus)), "\"brightness\" : {\"r\": 64,  \"g\": 64, \"b\": 64, \"w\": 0}}");
+                
+                /*
+                 * write the part that is common to all file content options
+                 */
+                cbal = sizeof(header);  // balance is full buffer at this point
 
                 snprintf(header, cbal, "{\n");
                 snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"label\" : \"%s\",\n", label);
@@ -150,9 +176,28 @@ void main(int argc, char **argv)  {
 
                 num = fwrite(header, sizeof(char), strlen(header), fp);
                 printf("%d header characters written\n", num);
-                printf("sizeof() each binary data structure = %d\n", sizeof(seq_bin_t));
-                num = fwrite(data, sizeof(uint8_t), sizeof(data), fp);
-                printf("%d binary bytes written\n", num);
+
+                /*
+                 * write the binary part that is unique to each file contents option
+                 */
+
+                /*
+                 * "default"
+                 * the original test data
+                 * NOTE: relies on canned data above and initialized values
+                 */
+                if(strcmp("default", fileopt) == 0)  {
+
+                    printf("sizeof() each binary data structure = %d\n", sizeof(seq_bin_t));
+                    num = fwrite(data, sizeof(uint8_t), sizeof(data), fp);
+                    printf("%d binary bytes written\n", num);
+                }
+                else if(strcmp("pong", fileopt) == 0)  {
+                    
+                }
+                else
+                    fprintf(stderr, "Error: bad file contents option (file empty)");
+
                 fclose(fp);
             }
         }
