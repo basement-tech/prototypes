@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 
-#define NUM_ARGS 2  // filename, strategy
-#define MIN_ARGS 1  // filename required
+#define NUM_ARGS 6  //
+#define MIN_ARGS 0  //
 #define DELIM_START '<'
 #define DELIM_STOP  '>'
 
@@ -56,7 +57,7 @@ seq_bin_t data[] = {
                     };
 
 void main(int argc, char **argv)  {
-    char filename[128];
+    char filename[128] = "neo_user_6.bseq";
     char label[32] = "USER-6";
     char strategy[32] = "bbitwise";
     char bonus[] = "{ \"depth\" : 2, \"pixel_cnt\" : 64, \"brightness\" : {\"r\": 64,  \"g\": 64, \"b\": 64, \"w\": 0}}";
@@ -65,53 +66,95 @@ void main(int argc, char **argv)  {
 
     FILE *fp;
     int num = 0;
+    int err = 0;
+    char arg = '\0';
 
     if(argc < (MIN_ARGS+1))
         fprintf(stderr, "Error: too few args; filename required\n");
     else if(argc > (NUM_ARGS+1))
         fprintf(stderr, "Error: Too many args ... more than %d\n", NUM_ARGS);
     else  {
-        for(int n = 1; n < argc; n++)  {
-            printf("Using filename : %s\n", argv[n]);
-            switch(n)  {
-                case 0:
-                    break;
-                case 1:
-                    strncpy(filename, argv[n], sizeof(filename));
-                    break;
-                case 2:
-                    strncpy(strategy, argv[n], sizeof(strategy));
-                    break;
-                default:
-                    break;
+        bool needhyphen = true;
+        argv++;--argc;
+        while((argc-- > 0) && (err >= 0))  {
+            if(needhyphen == true)  {
+                if((*argv)[0] != '-')  {
+                    fprintf(stderr, "Error: malformed arguments\n");
+                    err = -1;
+                }
+                else  {
+                    switch((*argv)[1])  {
+                        case 'f':  // filename
+                        case 'p':  // pixelcount
+                        case 's':  // strategy
+                            arg = (*argv)[1];
+                            break;
+
+                        default:
+                            fprintf(stderr, "Error: unknown argument");
+                            err = -1;
+                            break;
+                    }
+                    argv++;
+                    needhyphen = false;
+                }
+            }
+            else  {
+                switch(arg)  {
+                    case 'f':  // filename
+                        strncpy(filename, *argv, sizeof(filename));
+                        break;
+
+                    case 'p':  // pixelcount
+                        strncpy(pixelcnt, *argv, sizeof(pixelcnt));
+                        break;
+
+                    case 's':  // strategy
+                        strncpy(strategy, *argv, sizeof(strategy));
+                        break;
+
+                    default:
+                        fprintf(stderr, "Error: unknown argument");
+                        err = -1;
+                        break;
+                }
+                argv++;
+                needhyphen = true;
             }
         }
-        if((fp = fopen(filename, "wb")) == NULL)
-            fprintf(stderr, "Error: can't open file %s\n", filename);
-        else
-        {
-            uint32_t cbal = sizeof(header);
+        printf("Using:\n");
+        printf("   filename :  %s\n", filename);
+        printf("   pixelcount: %s\n", pixelcnt);
+        printf("   strategy:   %s\n", strategy);
 
-            snprintf(header, cbal, "{\n");
-            snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"label\" : \"%s\",\n", label);
-            snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"strategy\" : \"%s\",\n", strategy);
-            snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"bonus\" : %s,\n", bonus);
-            snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"__comment\" : \"back and forth\"\n");
-            snprintf(header+strlen(header), (cbal-=strlen(header)), "}\n");
+        if(err == 99999)  {
+            if((fp = fopen(filename, "wb")) == NULL)
+                fprintf(stderr, "Error: can't open file %s\n", filename);
+            else
+            {
+                uint32_t cbal = sizeof(header);
 
-            uint32_t hdr_len = strlen(header);
-            printf("Header as buffer:\n%s\n", header);
-            printf("strlen(header) = %d\n", strlen(header));
+                snprintf(header, cbal, "{\n");
+                snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"label\" : \"%s\",\n", label);
+                snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"strategy\" : \"%s\",\n", strategy);
+                snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"bonus\" : %s,\n", bonus);
+                snprintf(header+strlen(header), (cbal-=strlen(header)), "  \"__comment\" : \"back and forth\"\n");
+                snprintf(header+strlen(header), (cbal-=strlen(header)), "}\n");
 
-            snprintf(preamble, cbal, "{\"filetype\" : \"BIN_BW\", \"jsonlen\" : %4u, \"__comment\" : \"points as binary\"}\n", hdr_len);
-            fwrite(preamble, sizeof(char), strlen(preamble), fp);
+                uint32_t hdr_len = strlen(header);
+                printf("Header as buffer:\n%s\n", header);
+                printf("strlen(header) = %d\n", strlen(header));
 
-            num = fwrite(header, sizeof(char), strlen(header), fp);
-            printf("%d header characters written\n", num);
-            printf("sizeof() each binary data structure = %d\n", sizeof(seq_bin_t));
-            num = fwrite(data, sizeof(uint8_t), sizeof(data), fp);
-            printf("%d binary bytes written\n", num);
-            fclose(fp);
+                snprintf(preamble, cbal, "{\"filetype\" : \"BIN_BW\", \"jsonlen\" : %4u, \"__comment\" : \"points as binary\"}\n", hdr_len);
+                fwrite(preamble, sizeof(char), strlen(preamble), fp);
+
+                num = fwrite(header, sizeof(char), strlen(header), fp);
+                printf("%d header characters written\n", num);
+                printf("sizeof() each binary data structure = %d\n", sizeof(seq_bin_t));
+                num = fwrite(data, sizeof(uint8_t), sizeof(data), fp);
+                printf("%d binary bytes written\n", num);
+                fclose(fp);
+            }
         }
     }
 }
