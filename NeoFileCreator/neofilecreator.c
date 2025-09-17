@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define NUM_ARGS 8  //
+#define NUM_ARGS 13  //
 #define MIN_ARGS 0  //
 #define DELIM_START '<'
 #define DELIM_STOP  '>'
@@ -65,6 +65,10 @@ void main(int argc, char **argv)  {
     char bonus[128] = "{ \"depth\" : 2, \"pixel_cnt\" : 64, \"brightness\" : {\"r\": 64,  \"g\": 64, \"b\": 64, \"w\": 0}}";
     char pixelcnt[32] = "64";
     int32_t interval = 1000;  // interval between points
+    uint8_t r = 64;
+    uint8_t g = 64;
+    uint8_t b = 64;
+    uint8_t w = 0;
     int ipixelcnt = 64;
     int idepth = 2;  // depth as integer
     int jlen = 0; // length of the json to follow
@@ -94,6 +98,7 @@ void main(int argc, char **argv)  {
                         case 'p':  // pixelcount
                         case 'o':  // file contents option
                         case 't':  // time interval
+                        case 'c':  // color r g b w
                             arg = (*argv)[1];
                             break;
 
@@ -124,6 +129,16 @@ void main(int argc, char **argv)  {
                         interval = atoi(*argv);
                         break;
 
+                    case 'c':  // time interval
+                        r = atoi(*argv++);
+                        argc--;
+                        g = atoi(*argv++);
+                        argc--;
+                        b = atoi(*argv++);
+                        argc--;
+                        w = atoi(*argv++);
+                        break;
+
                     default:
                         fprintf(stderr, "Error: unknown argument");
                         err = -1;
@@ -137,6 +152,7 @@ void main(int argc, char **argv)  {
         printf("   filename :  \"%s\"\n", filename);
         printf("   pixelcount: \"%s\"\n", pixelcnt);
         printf("   fileopt:    \"%s\"\n", fileopt);
+        printf("   color :      %u %u %u %u\n", r, g, b, w);
 
         if(err >= 0)  {
             if((fp = fopen(filename, "wb")) == NULL)
@@ -157,7 +173,8 @@ void main(int argc, char **argv)  {
                 snprintf(bonus+strlen(bonus), (cbal-strlen(bonus)), "%2d, ", idepth);
                 snprintf(bonus+strlen(bonus), (cbal-strlen(bonus)), "\"pixel_cnt\" : ");
                 snprintf(bonus+strlen(bonus), (cbal-strlen(bonus)), "%3d, ", ipixelcnt);
-                snprintf(bonus+strlen(bonus), (cbal-strlen(bonus)), "\"brightness\" : {\"r\": 64,  \"g\": 64, \"b\": 64, \"w\": 0}}");
+                snprintf(bonus+strlen(bonus), (cbal-strlen(bonus)), "\"brightness\" : ");
+                snprintf(bonus+strlen(bonus), (cbal-strlen(bonus)), "{\"r\": %3u,  \"g\": %3u, \"b\": %3u, \"w\": %3u}}", r, g, b, w);
                 printf("generated bonus string: %s\n", bonus);
                 
                 /*
@@ -266,6 +283,6 @@ void main(int argc, char **argv)  {
             }
         }
         else
-            fprintf(stderr, "USAGE: neofilecreator.exe -p <numpixels> -o <defaule, pong> -f <filename>\n");
+            fprintf(stderr, "USAGE: neofilecreator.exe -p <numpixels> -o <defaule, pong> -f <filename> -t <mS>\n");
     }
 }
