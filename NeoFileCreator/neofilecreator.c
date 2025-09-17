@@ -4,12 +4,15 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define NUM_ARGS 13  //
+#define NUM_ARGS 14  //
 #define MIN_ARGS 0  //
 #define DELIM_START '<'
 #define DELIM_STOP  '>'
 
 #define MAX_HDR_SIZE 1024
+
+#define PONGA_START_ANGLE -45     // start/reset angle
+#define POINTA_SERVO_MASK 0x0001  // which servo to move
 
 static const char header_json[] =
 R"==(
@@ -69,6 +72,8 @@ void main(int argc, char **argv)  {
     uint8_t g = 64;
     uint8_t b = 64;
     uint8_t w = 0;
+    bool jhdr = true;  // write the json header or not
+
     int ipixelcnt = 64;
     int idepth = 2;  // depth as integer
     int jlen = 0; // length of the json to follow
@@ -100,15 +105,20 @@ void main(int argc, char **argv)  {
                         case 't':  // time interval
                         case 'c':  // color r g b w
                             arg = (*argv)[1];
+                            needhyphen = false;
+                            break;
+
+                        case 'x':  // no json header (for debugging)
+                            jhdr = false;  // no argument
+                            needhyphen = true;
                             break;
 
                         default:
-                            fprintf(stderr, "Error: unknown argument");
+                            fprintf(stderr, "Error: unknown argument: %s\n", *argv);
                             err = -1;
                             break;
                     }
                     argv++;
-                    needhyphen = false;
                 }
             }
             else  {
@@ -136,11 +146,11 @@ void main(int argc, char **argv)  {
                         argc--;
                         b = atoi(*argv++);
                         argc--;
-                        w = atoi(*argv++);
+                        w = atoi(*argv);
                         break;
 
                     default:
-                        fprintf(stderr, "Error: unknown argument");
+                        fprintf(stderr, "Error: unknown argument value: %s\n", *argv);
                         err = -1;
                         break;
                 }
@@ -153,6 +163,7 @@ void main(int argc, char **argv)  {
         printf("   pixelcount: \"%s\"\n", pixelcnt);
         printf("   fileopt:    \"%s\"\n", fileopt);
         printf("   color :      %u %u %u %u\n", r, g, b, w);
+        printf("   interval:    %d\n", interval);
 
         if(err >= 0)  {
             if((fp = fopen(filename, "wb")) == NULL)
@@ -163,7 +174,8 @@ void main(int argc, char **argv)  {
                 idepth = ipixelcnt / BITS_PER_BITMAP;  // remainder truncated
                 if((ipixelcnt % BITS_PER_BITMAP) > 0)  // leftovers require a full depth added
                     idepth++;
-                printf("   calculated depth:  %d\n", idepth);
+                printf("   depth(calc): %d\n", idepth);
+                printf("\n");
 
                 /*
                  * create the bonus string based on parameters
@@ -194,10 +206,17 @@ void main(int argc, char **argv)  {
                 printf("strlen(header) = %d\n", strlen(header));
 
                 snprintf(preamble, cbal, "{\"filetype\" : \"BIN_BW\", \"jsonlen\" : %4u, \"__comment\" : \"points as binary\"}\n", hdr_len);
-                fwrite(preamble, sizeof(char), strlen(preamble), fp);
 
-                num = fwrite(header, sizeof(char), strlen(header), fp);
-                printf("%d header characters written\n", num);
+                if(jhdr == true)  {
+                    fwrite(preamble, sizeof(char), strlen(preamble), fp);
+
+                    num = fwrite(header, sizeof(char), strlen(header), fp);
+                    printf("%d header characters written\n", num);
+                }
+                else  {
+                    printf("CAUTION: No json header written .. file not runnable\n");
+                    printf("  ... use od -w27 -b <filename> to display data\n");
+                }
 
                 /*
                  * write the binary part that is unique to each file contents option
@@ -208,7 +227,7 @@ void main(int argc, char **argv)  {
                  * the original test data
                  * NOTE: relies on canned data above and initialized values
                  */
-                if(strncmp("default", fileopt, strlen("default")) == 0)  {
+                if(strncmp("default", fileopt, strlen(fileopt)) == 0)  {
 
                     printf("sizeof() each binary data structure = %d\n", sizeof(seq_bin_t));
                     num = fwrite(data, sizeof(uint8_t), sizeof(data), fp);
@@ -219,12 +238,12 @@ void main(int argc, char **argv)  {
                  * single pixel moving back and forth
                  * all colors equal at this point
                  */
-                else if(strncmp("pong", fileopt, strlen("pong")) == 0)  {
-                    uint32_t mask = 0x01;
-                    int depth = 0;
+                else if(strncmp("pong", fileopt, strlen(fileopt)) == 0)  {
+                    uint32_t mask = 0x01;  // which pixels are on
+                    int depth = 0;  // number of 32 bit things required to cover strand
                     int actd = -1;  // depth level that is being lit
-                    int point = 0;                    
-                    seq_bin_t bindata;
+                    int point = 0;  // point counter
+                    seq_bin_t bindata;  // holds one point depth
 
                     /*
                      * in this case, the number of pixels is a sarogate 
@@ -276,6 +295,90 @@ void main(int argc, char **argv)  {
                         fwrite(&bindata, sizeof(uint8_t), sizeof(bindata), fp);
                     }
                 }
+                /*
+                 * single pixel moving back and forth
+                 * all colors equal at this point
+                 * sweep a single servo as the active pixel moves
+                 */
+                else if(strncmp("ponga", fileopt, strlen(fileopt)) == 0)  {
+                    uint32_t mask = 0x01;  // which pixels are on
+                    int depth = 0;  // number of 32 bit things required to cover strand
+                    int actd = -1;  // depth level that is being lit
+                    int point = 0;  // point counter
+
+                    seq_bin_t bindata;  // holds one point depth
+
+                    int32_t angle = 0;  // angle to write
+                    int32_t ainc = 0;   // how much to incremet angle per point
+
+                    angle = -45;  // start servo angle here
+                    ainc = 90 / ipixelcnt;  // move this much per point (intentionally drop remainder)
+
+                    /*
+                     * in this case, the number of pixels is a sarogate 
+                     * for the number of points that we'll have in the sequence
+                     * to completely traverse the strand
+                     */
+                    for(point = 0; point < ipixelcnt; point++)  {
+                        // first point in the next depth level
+                        if((point % (BITS_PER_BITMAP-1)) == 0)  {
+                            actd++;
+                            mask = 0x01;
+                        }
+                        for(depth = 0; depth < idepth; depth++)  {
+                            bindata.o = depth;
+                            bindata.s = 0;  // no servo movement
+                            bindata.a = 0;  // no servo movement
+                            bindata.d = interval;  // 1000 mS by default
+
+                            /*
+                             * set the servo mask and angle at depth 0 only
+                             */
+                            if(depth == 0)  {  // write the angle only on depth 0
+                                if(point == 0)
+                                    angle = PONGA_START_ANGLE;
+                                else
+                                    angle += ainc;
+                                bindata.a = angle;
+                                bindata.s = POINTA_SERVO_MASK;  // hardcoded to first servo channel
+                            }
+
+                            /*
+                             * set the bitmasks depending on where in the depth we ar
+                             */
+                            if(depth == actd)  {
+                                bindata.r = mask;
+                                bindata.g = mask;
+                                bindata.b = mask;
+                                bindata.w = mask;
+                            }
+                            else  {
+                                bindata.r = 0;
+                                bindata.g = 0;
+                                bindata.b = 0;
+                                bindata.w = 0;
+                            }
+                            fwrite(&bindata, sizeof(uint8_t), sizeof(bindata), fp);
+                        }
+                        mask = mask << 1;
+                    }
+                    /*
+                     * write the termination point
+                     */
+                    for(depth = 0; depth < idepth; depth++)  {
+                        bindata.o = depth;
+                        bindata.s = 0;  // no servo movement
+                        bindata.a = 0;  // no servo movement
+                        bindata.d = -1;  // termination value
+
+                        bindata.r = 0;
+                        bindata.g = 0;
+                        bindata.b = 0;
+                        bindata.w = 0;
+
+                        fwrite(&bindata, sizeof(uint8_t), sizeof(bindata), fp);
+                    }
+                }
                 else
                     fprintf(stderr, "Error: bad file contents option (\"%s\")", fileopt);
 
@@ -283,6 +386,6 @@ void main(int argc, char **argv)  {
             }
         }
         else
-            fprintf(stderr, "USAGE: neofilecreator.exe -p <numpixels> -o <defaule, pong> -f <filename> -t <mS>\n");
+            fprintf(stderr, "USAGE: neofilecreator.exe -p <numpixels> -o <defaule, pong> -f <filename> -t <mS> -c <r g b w> -x\n");
     }
 }
